@@ -10,8 +10,7 @@ class postRequests(Resource):
     sort_error = {"error":"sortBy paremeter is invalid"}
     dir_error = {"error":"direction parameter is invalid"}
 
-    def __init__(self,tag):
-        self.tag = tag
+    def __init__(self):
         pass
 
     def sortId(self,e):
@@ -33,8 +32,6 @@ class postRequests(Resource):
         return result
 
     def get(self,tag:str,sortBy:str = None,direction:str = None):
-        if( not tag):
-            tag = self.tag
         if(tag):
             get_data = requests.get('https://api.hatchways.io/assessment/blog/posts',params={"tag":tag})
             result = get_data.json()
@@ -68,4 +65,4 @@ class postRequests(Resource):
         else:
            return self.tag_error,400
 
-        return 200
+        return result

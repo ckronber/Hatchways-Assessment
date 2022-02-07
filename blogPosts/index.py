@@ -1,5 +1,5 @@
 import requests
-from flask import Flask,jsonify,url_for,request
+from flask import Flask,jsonify,url_for,request,json
 from flask_restful import Api
 from pprint import pprint
 from models.posts import Post,user_posts
@@ -61,6 +61,7 @@ for p in myPost.json():
 def deserialize(myInput):
     schema = user_posts(many=True)
     result = schema.load(myInput)
+
     #posts = []
     #for p in myPost["posts"]:
     #    result = schema.load(p)
@@ -75,11 +76,34 @@ def serialize(input_posts):
 
 app = Flask(__name__)
 api = Api(app)
+my_request = postRequests()
 
 #@app.route('ping')
 @app.route('/posts')
 def get_query_string():
-    return request.query_string,200
-    
+    args = request.args
+    if(len(args) > 3):
+        return 404
+
+    if "tag" in args.keys():
+        if "sortBy" in args.keys():
+            if"direction" in args.keys():
+                return my_request.get(args["tag"],args["sortBy"],args["direction"])
+            else:
+                return my_request.get(args["tag"],args["sortBy"])
+        else:
+            return my_request.get(args["tag"])
+    else:
+        return 404
+
+    """
+    if(args["tag"] and args["sortBy"]):
+        return my_request.get(str(args["tag"]),str(args["sortBy"]),str(args["direction"]))
+    elif(args["tag"] and args["sortBy"]):
+        return my_request.get(str(args["tag"]),str(args["sortBy"]))
+    elif(args):
+        return my_request.get(str(args["tag"]))
+    """
+
 if __name__ == "__main__":
     app.run(host='localhost',port = 5000,debug=True)
