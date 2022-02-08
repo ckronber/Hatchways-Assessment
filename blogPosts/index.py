@@ -10,16 +10,16 @@ api = Api(app)
 my_request = postRequests()
 
 @app.route('/cache')
-def get_cahce():
+async def get_cahce():
     return jsonify(my_request.cache_storage),200
 
 @app.route('/ping')
-def get_ping():
+async def get_ping():
     value = {"success":"true"}
     return jsonify(value)
 
 @app.route('/posts')
-def get_query_string():
+async def get_query_string():
     args = request.args
     if(len(args) > 3):
         return jsonify({"error":"Too many Arguments"}),400
@@ -27,16 +27,19 @@ def get_query_string():
     if "tag" in args.keys():
         if "sortBy" in args.keys():
             if"direction" in args.keys():
-                return my_request.get(jsonify(args["tag"],args["sortBy"],args["direction"])),200
+                get_post = await my_request.get(args["tag"],args["sortBy"],args["direction"])
+                return get_post,200
             else:
-                return my_request.get(jsonify(args["tag"],args["sortBy"])),200
+                get_post = await my_request.get(args["tag"],args["sortBy"])
+                return  get_post,200
         else:
             if "direction" in args.keys():
-                return jsonify({"error":"direction should not be used here"})
+                return  {"error":"direction should not be used here"}
             else:
-                return jsonify(my_request.get(args["tag"])),200
+                get_post = await my_request.get(args["tag"])
+                return get_post,200
     else: 
-        return jsonify(my_request.tag_error),400
+        return my_request.tag_error,400
 
 if __name__ == "__main__":
     app.run(host='localhost',port = 5000,debug=True)

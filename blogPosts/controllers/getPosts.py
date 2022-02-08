@@ -12,7 +12,7 @@ class postRequests(Resource):
         self.dir_error = {"error":"direction parameter is invalid"}
         self.tag_store = []
         self.cache_storage = {}
-
+    
     def sortId(self,e):
         return e['id']
     def sortReads(self,e):
@@ -32,7 +32,7 @@ class postRequests(Resource):
         j_result = mySchema.dump(input_posts)
         return j_result
 
-    def cache_store(self,tag):
+    async def cache_store(self,tag):
         if(tag in self.tag_store):
             print("brought from cache")
             return self.cache_storage[tag]
@@ -40,16 +40,18 @@ class postRequests(Resource):
             print("stored to cache")
             self.tag_store.append(tag)
             get_data = requests.get('https://api.hatchways.io/assessment/blog/posts',params={"tag":tag})
-            json_data = get_data.json()
+            json_data = get_data
+            #json_data = get_data.json()
             self.cache_storage[tag] = json_data
             return json_data
 
-    def get(self,tag:str,sortBy:str = None,direction:str = None):
+    async def get(self,tag:str,sortBy:str = None,direction:str = None):
         if(tag):
             #get_data = requests.get('https://api.hatchways.io/assessment/blog/posts',params={"tag":tag})
-            get_data = self.cache_store(tag)
+            get_data = await self.cache_store(tag)
             #result = get_data.json()
             result = get_data
+            
             if(sortBy):
                 if(sortBy == "id"):
                     if(direction == "desc"):
