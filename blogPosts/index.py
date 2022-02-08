@@ -1,42 +1,55 @@
-from flask import Flask,request,jsonify,json
+from flask import Flask,request,jsonify
 from flask_restful import Api
-from pprint import pprint
 from models.posts import user_posts
 from controllers.getPosts import postRequests
-import asyncio
+from testing import testResult
 
 app = Flask(__name__)
 api = Api(app)
 my_request = postRequests()
 
+@app.route('/test')
+async def testSolution():
+    myTest = testResult()
+    myTest.compare_solutions()
+    #if statement to check whether the test results print errors
+    if(myTest.defaultTestResult().printErrors() == None):
+        return jsonify({"errors":"None"})
+    else:
+        return jsonify(myTest.defaultTestResult().printErrors())
+
 @app.route('/cache')
 async def get_cahce():
-    return jsonify(my_request.cache_storage),200
+    if(my_request.cache_store is None):
+        return jsonify({"storage":"Empty"})
+    return jsonify({"Current Cache":my_request.cache_store}),200
 
 @app.route('/ping')
 async def get_ping():
     value = {"success":"true"}
-    return jsonify(value)
+    return value
 
 @app.route('/posts')
 async def get_query_string():
     args = request.args
-    if(len(args) > 3):
-        return jsonify({"error":"Too many Arguments"}),400
 
-    if "tag" in args.keys():
+    #checking for more arguments than there should be
+    if(len(args) > 3):
+        return {"error":"Too many Arguments"},400
+
+    if "tags" in args.keys():
         if "sortBy" in args.keys():
             if"direction" in args.keys():
-                get_post = await my_request.get(args["tag"],args["sortBy"],args["direction"])
+                get_post = await my_request.get(args["tags"],args["sortBy"],args["direction"])
                 return get_post,200
             else:
-                get_post = await my_request.get(args["tag"],args["sortBy"])
+                get_post = await my_request.get(args["tags"],args["sortBy"])
                 return  get_post,200
         else:
             if "direction" in args.keys():
                 return  {"error":"direction should not be used here"}
             else:
-                get_post = await my_request.get(args["tag"])
+                get_post = await my_request.get(args["tags"])
                 return get_post,200
     else: 
         return my_request.tag_error,400
